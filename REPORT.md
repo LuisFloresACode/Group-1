@@ -88,3 +88,114 @@ I suggest making these improvements:
 After checking the code, I found that Brain-Rush already has some useful security protections. For example, it checks administrator permissions, validates XP amounts, uses parameterized SQL queries, and checks daily challenge progress.
 
 However, I think the bot can be improved by adding command cooldowns and more security tests. These changes can help make the bot safer and more reliable.
+
+## 3. Technical Debt and Code Smell Analysis
+
+### Method
+
+For this analysis, I used ESLint to identify potential problems in our JavaScript code and manually examined the XP and leveling system.
+
+After configuring ESLint for Node.js and JavaScript modules, I ran the following command in our Codespace:
+
+```bash
+npx eslint src/
+```
+
+I also reviewed `src/xp/xpManager.js` to examine the XP calculations, input validation, and overall maintainability of the code.
+
+### Results
+
+ESLint reported one error and zero warnings.
+
+| File | Finding | Type |
+|---|---|---|
+| `src/events/guildMemberAdd.js` | `getWelcomeMessageWithMeme` is declared but never used. | Unused code |
+| `src/xp/xpManager.js` | `addXP()` uses an unnecessary temporary variable. | Minor code smell |
+
+### Findings
+
+**Unused function**
+
+ESLint identified an unused function named `getWelcomeMessageWithMeme` in `guildMemberAdd.js`, at line 34. The function is defined but not used in the current welcome-message implementation.
+
+Although this does not necessarily prevent the bot from working, unused code can make the project harder to understand and maintain. It may also cause confusion about which features are currently supported.
+
+**Unnecessary temporary variable**
+
+While reviewing `xpManager.js`, I noticed that the `addXP()` function creates a temporary variable, adds the XP amount, and then returns the result.
+
+The function works correctly, but it could be simplified to return `currentXP + amount` directly. This is a minor maintainability issue rather than a functional bug.
+
+### Recommendations
+
+I recommend removing unused code if the team does not plan to use it and simplifying unnecessary calculations where possible.
+
+We should also continue reviewing the XP system as new features are added, especially when multiple commands can modify user progress.
+
+## 4. XP and Leveling Unit Tests
+
+### Method
+
+For my second analysis activity, I wrote three unit tests for the XP and leveling system.
+
+The tests were added to a new file:
+
+`tests/xpManager.spec.js`
+
+I used a temporary SQLite database so the tests would not modify the bot's normal XP records.
+
+I ran the automated tests using:
+
+```bash
+npm test
+```
+
+Before adding my tests, the project had five passing tests for the daily trivia system. After adding my three tests, all eight tests passed.
+
+### Results
+
+| Test | Purpose | Result |
+|---|---|---|
+| Level calculations | Verify that XP values produce the expected levels. | Passed |
+| Invalid XP amounts | Verify that zero, negative, decimal, and infinite XP awards are rejected. | Passed |
+| XP storage and separation | Verify that XP accumulates correctly and remains separate for different users and servers. | Passed |
+
+Final test results:
+
+- Existing daily trivia tests: 5 passing
+- New XP and leveling tests: 3 passing
+- Total: 8 passing, 0 failing
+
+### Findings
+
+**Level calculations**
+
+The first test checks that `calculateLevel()` returns the expected levels for different XP amounts, including boundary values such as 99 and 100 XP.
+
+All assertions passed, indicating that the tested level calculations behave as expected.
+
+**Invalid XP amounts**
+
+The second test attempts to award invalid XP amounts, including zero, negative numbers, decimals, and infinity.
+
+The `awardXP()` function correctly rejected these values by throwing errors. This confirmed that the existing input validation works for the cases tested.
+
+**XP storage and separation**
+
+The third test awards XP to different users across different Discord servers.
+
+It verifies that XP accumulates correctly for an existing user, different users have independent XP records, and the same user can have different XP totals in separate servers.
+
+It also verifies that a user without an existing XP record starts with zero XP.
+
+All assertions passed.
+
+### Recommendations
+
+Although the tests passed, there are additional scenarios worth testing in the future.
+
+For example, we could test database failures, larger XP totals, and whether data remains available after closing and reopening the database.
+
+The current tests verify important XP behavior, but they do not cover every possible failure or prove persistence across a complete bot restart.
+
+I recommend keeping these tests in the project and expanding them as new XP and leveling features are implemented.
