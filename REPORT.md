@@ -102,9 +102,10 @@ my new smoke test. Both runs used the same version of the team’s code.
 | Measure | Before smoke test | After smoke test |
 |---|---:|---:|
 | Tests passed | 5 | 6 |
-| Overall line coverage | 47.37% | 61.52% |
+| Overall line coverage | 47.37% | 66.88% |
 | `messageCreate.js` line coverage | 0% | 40.56% |
 | `handleTrivia.js` line coverage | 0% | 66.91% |
+| `interactionCreate.js` line coverage | 0% | 77.77% |
 
 ### Findings
 
@@ -112,7 +113,7 @@ The original tests covered 97.6% of the lines in `dailyChallenge.js`,
 but they never ran `messageCreate.js` or `handleTrivia.js`. This meant
 we had tests for calculating XP, but no test checking whether a player
 could send a trivia command and see the XP they earned. Adding the smoke
-test increased overall line coverage by 14.15 percentage points.
+test increased overall line coverage by 19.51 percentage points.
 
 ## 4. Smoke Testing — Subodh Tiwari
 
@@ -127,11 +128,10 @@ from starting a challenge to checking their XP.
 All six tests passed. The smoke test checked that `!daily sports` showed
 question 1 of 5. After the player replied with the correct answer, the bot
 confirmed the 10 XP reward and showed question 2. The test then sent
-`!level` and verified that the player’s total was 10 XP.
+`!level` and verified that the player’s total was 10 XP. The test also ran /leaderboard and verified that the player appeared in first place with 10 XP.
 
 ### Recommendations
 
 One follow-up test should check what happens when a player types `!answer 2`
 without replying to a question. The bot should tell the player to reply
-directly to their question. Another useful test would check a slash-command
-response, because `interactionCreate.js` still had 0% line coverage.
+directly to their question. A follow-up test could run /leaderboard in a server where nobody has earned XP and check that the bot replies “The leaderboard is currently empty!”

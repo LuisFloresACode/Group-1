@@ -172,5 +172,27 @@ describe("Daily sports challenges", function () {
         }, client);
 
         assert.match(replies[3], /Total XP: 10\b/);
+
+        const leaderboardEvent = require("../src/events/interactionCreate.js").default;
+        let leaderboardReply;
+
+        await leaderboardEvent.execute({
+            isChatInputCommand: () => true,
+            commandName: "leaderboard",
+            guildId: message.guild.id,
+            guild: {
+                members: {
+                    fetch: async (id) => {
+                        assert.equal(id, player.id);
+                        return { displayName: "Smoke Player" };
+                    }
+                }
+            },
+            reply: async (response) => { leaderboardReply = response; }
+        });
+
+        assert.match(leaderboardReply, /Server Leaderboard/);
+        assert.ok(leaderboardReply.includes("1. **Smoke Player**"));
+        assert.ok(leaderboardReply.includes("(10 XP)"));
     });
 });
