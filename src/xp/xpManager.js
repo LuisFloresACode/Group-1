@@ -5,9 +5,7 @@ export function calculateLevel(xp){
 }
 
 export function addXP(currentXP, amount) {
-    let xp = currentXP;
-    xp += amount;
-    return xp;
+    return currentXP + amount;
 }
 
 export function awardXP(serverId, userId, amount) {
