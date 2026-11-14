@@ -26,7 +26,45 @@ Deployment must retain the data folder across restarts and updates.
 Questions do not repeat until the available sports question bank is
 exhausted. Previously answered question messages cannot award XP again.
 
-### Testing
+## XP and Leveling
+
+Brain-Rush allows Discord server members to earn XP and level up.
+
+- `!level @user` — View a user's total XP and current level.
+- `!testxp @user amount` — Award XP to a user for testing purposes (administrators only).
+
+Users begin at Level 1 with 0 XP and gain one level for every 100 XP earned.
+
+XP is stored using SQLite and tracked separately for each user and Discord server. XP persists between bot restarts as long as the database is preserved.
+
+## Server Leaderboard
+
+Brain-Rush includes a leaderboard that ranks server members based on their total XP.
+
+### Command
+
+/leaderboard — Display the top 10 users in the server, ranked by XP.
+
+The leaderboard displays each user's name, current level, and total XP.
+
+Slash Command Setup
+The leaderboard uses a Discord slash command, which must be registered before use.
+
+Add the following variables to your .env file:
+
+TOKEN — Discord bot token.
+CLIENT_ID — Discord application ID.
+GUILD_ID — Discord server ID.
+
+Register the command by running:
+
+npm run register
+
+Once registered, use /leaderboard in the configured Discord server.
+
+The leaderboard uses the same XP database as the leveling and trivia systems.
+
+## Testing
 
 Run automated tests:
 
@@ -42,6 +80,3 @@ npm start
 
 Use a `.env` file containing the bot's `TOKEN`. Never commit that file.
 
-Verified in the private Discord test server: correct and incorrect
-answers, rejection of repeated answers, challenge resumption, the
-five-question limit, and persistence after restarting the bot.
