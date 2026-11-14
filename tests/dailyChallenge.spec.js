@@ -126,4 +126,51 @@ describe("Daily sports challenges", function () {
 
         assert.equal(getXP("another-server", "correct-user"), 0);
     });
+        it("lets a player start a challenge, answer, and check their XP", async function () {
+        const event = require("../src/events/messageCreate.js").default;
+        const player = { id: "12345", bot: false };
+        const client = { user: { id: "99999" } };
+        const replies = [];
+
+        // Capture what the bot would send to Discord.
+        const message = {
+            content: "!daily sports",
+            author: player,
+            guild: {
+                id: "smoke-server",
+                members: { fetch: async () => player }
+            },
+            reply: async (response) => { replies.push(response); }
+        };
+
+        await event.execute(message, client);
+
+        const prompt = replies[0].embeds[0];
+        assert.equal(prompt.title, "Sports: Question 1/5");
+        const footer = /^brainrush:12345:(sports-\d+)$/.exec(prompt.footer.text);
+        assert.ok(footer, "The question should belong to this player");
+
+        // Answer the actual question the bot picked.
+        const answerNumber = correctOption(footer[1]) + 1;
+        await event.execute({
+            ...message,
+            content: `!answer ${answerNumber}`,
+            reference: { messageId: "first-question" },
+            fetchReference: async () => ({
+                author: client.user,
+                embeds: [prompt]
+            })
+        }, client);
+
+        assert.equal(replies[1].content, "Correct! +10 XP.");
+        assert.equal(replies[2].embeds[0].title, "Sports: Question 2/5");
+
+        await event.execute({
+            ...message,
+            content: "!level <@12345>",
+            mentions: { users: { first: () => player } }
+        }, client);
+
+        assert.match(replies[3], /Total XP: 10\b/);
+    });
 });
